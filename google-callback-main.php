@@ -4,9 +4,9 @@ require_once 'connect.php';
 session_start();
 
 $client = new Google_Client();
-$client->setClientId('1085945655091-p4vda4jljae5rtu4vsrpgn0m24ksi2js.apps.googleusercontent.com');
-$client->setClientSecret('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');
-$client->setRedirectUri('http://localhost/HCI-L_GROUP2_OE6/google-callback-main.php');
+$client->setClientId('1085945655091-oqcsqvrlv1ugqrgnpqj5gvqqg7j7fk55.apps.googleusercontent.com');
+$client->setClientSecret('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');
+$client->setRedirectUri('http://localhost/CookBlock/google-callback-main.php');
 $client->addScope('email');
 $client->addScope('profile');
 

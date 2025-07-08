@@ -8,9 +8,9 @@ $error = '';
 
 // Initialize Google Client
 $googleClient = new Google_Client();
-$googleClient->setClientId('1085945655091-p4vda4jljae5rtu4vsrpgn0m24ksi2js.apps.googleusercontent.com');
+$googleClient->setClientId('1085945655091-oqcsqvrlv1ugqrgnpqj5gvqqg7j7fk55.apps.googleusercontent.com');
 $googleClient->setClientSecret('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');
-$googleClient->setRedirectUri('http://localhost/HCI-L_GROUP2_OE6/google-callback-main.php');
+$googleClient->setRedirectUri('http://localhost/CookBlock/google-callback-main.php');
 $googleClient->addScope('email');
 $googleClient->addScope('profile');
 

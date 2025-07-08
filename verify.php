@@ -75,7 +75,7 @@ if ($email && $token) {
             $update = $pdo->prepare("UPDATE users SET verification_token = ? WHERE id = ?");
             $update->execute([$token, $user['id']]);
 
-            $verifyLink = "http://localhost/HCI-L_GROUP2_OE6/verify.php?email=" . urlencode($email) . "&token=" . $token;
+            $verifyLink = "http://localhost/CookBlock/verify.php?email=" . urlencode($email) . "&token=" . $token;
 
             $mail = new PHPMailer(true);
             try {
