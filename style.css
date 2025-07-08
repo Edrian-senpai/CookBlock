@@ -1,0 +1,90 @@
+        body {
+            background-color: #ffdec8; /* light orange tint */
+        }
+
+        .card {
+            border: none;
+            border-radius: 1rem;
+        }
+
+        .btn-orange {
+            background-color: #ff6f00;
+            color: white;
+        }
+
+        .btn-orange:hover {
+            background-color: #e65c00;
+        }
+
+        .text-orange {
+            color: #ff6f00;
+        }
+
+        a.text-orange:hover {
+            color: #e65c00;
+        }
+
+
+        /*view_all.php designs*/
+        .text-orange {
+            color: #ff6f00;
+        }
+        .btn-outline-orange {
+            border-color: #ff6f00;
+            color: #ff6f00;
+        }
+        .btn-outline-orange:hover {
+            background-color: #ff6f00;
+            color: white;
+        }
+        .card {
+            border: none;
+            border-radius: 1rem;
+        }
+        .table thead {
+            background-color: #ffe0c2;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #fff0e0;
+        }
+
+        .bg-orange {
+            background-color: #fd7e14 !important;
+        }
+        .border-orange {
+            border-color: #fd7e14 !important;
+        }
+        .badge-orange {
+            background-color: #e0bd10;
+            color: #000000;
+        }
+
+        .btn-outline-orange {
+            border-color: #fd7e14;
+            color: #fd7e14;
+        }
+        .btn-outline-orange:hover {
+            background-color: #fd7e14;
+            color: #fff;
+        }
+
+        #flash-message {
+            transition: opacity 0.5s ease;
+        }
+
+
+        /*add_recipe.php designs*/
+        #add-recipe-page .bg-orange { background-color: #fd7e14 !important; }
+        #add-recipe-page .text-orange { color: #fd7e14 !important; }
+        #add-recipe-page .border-orange { border-color: #fd7e14 !important; }
+        #add-recipe-page .btn-orange {
+            background-color: #fd7e14;
+            color: white;
+        }
+        #add-recipe-page .btn-orange:hover {
+            background-color: #e76c00;
+            color: white;
+        }
+        #add-recipe-page .card-header {
+            border-bottom: none;
+        }
