@@ -116,6 +116,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $user) {
                         }
                     }
 
+                    // Log to user_logs
+                    $pdo->exec("CREATE TABLE IF NOT EXISTS user_logs (id INT AUTO_INCREMENT PRIMARY KEY, user_id INT, action VARCHAR(255), details TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
+                    $logAction = 'Edit recipe';
+                    $logDetails = "Edited recipe '{$title}' (ID: {$recipe_id})";
+                    $logStmt = $pdo->prepare("INSERT INTO user_logs (user_id, action, details) VALUES (?, ?, ?)");
+                    $logStmt->execute([$user['id'], $logAction, $logDetails]);
+
                     // Commit transaction
                     $pdo->commit();
 
@@ -143,24 +150,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $user) {
     <meta charset="UTF-8">
     <title>Edit Recipe</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        #edit-recipe-page .bg-orange { background-color: #fd7e14 !important; }
-        #edit-recipe-page .text-orange { color:rgb(0, 0, 0) !important; }
-        #edit-recipe-page .border-orange { border-color: #fd7e14 !important; }
-        #edit-recipe-page .btn-orange {
-            background-color: #fd7e14;
-            color: white;
-        }
-        #edit-recipe-page .btn-orange:hover {
-            background-color: #e76c00;
-            color: white;
-        }
-        #edit-recipe-page .card-header {
-            border-bottom: none;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-light">
+<body>
 <div id="edit-recipe-page" class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">

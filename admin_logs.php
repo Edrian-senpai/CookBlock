@@ -18,7 +18,7 @@ if ($pdo->query("SHOW TABLES LIKE 'admin_logs'")->fetch()) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Superadmin Audit - CookBlock Admin</title>
+    <title>Admin logs - CookBlock Admin</title>
      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -28,7 +28,7 @@ if ($pdo->query("SHOW TABLES LIKE 'admin_logs'")->fetch()) {
 <div class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-orange fw-bold">
-            <i class="bi bi-shield-shaded me-2"></i>Superadmin Audit
+            <i class="bi bi-shield-shaded me-2"></i>Admin logs
         </h2>
         <a href="view_all.php" class="btn btn-outline-orange">
             <i class="bi bi-arrow-left"></i> Back to Dashboard

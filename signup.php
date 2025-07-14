@@ -112,11 +112,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         <?php endif; ?>
         
-        <?php if ($success): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                Account created successfully! You can now <a href="login.php" class="alert-link">log in</a>.
+
+        <!-- Success Toast -->
+        <div aria-live="polite" aria-atomic="true" class="position-relative">
+            <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+                <div id="signupSuccessToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            Account created successfully! You can now <a href="login.php" class="alert-link text-white text-decoration-underline">log in</a>.
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
             </div>
-        <?php endif; ?>
+        </div>
 
         <!-- Regular Signup form -->
         <form method="POST" action="signup.php">
@@ -182,5 +191,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        <?php if ($success): ?>
+            var toastEl = document.getElementById('signupSuccessToast');
+            var toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        <?php endif; ?>
+    });
+</script>
 </body>
 </html>

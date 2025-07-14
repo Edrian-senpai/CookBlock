@@ -7,12 +7,27 @@ $success = false;
 
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Start session to get user info
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $userId = $_SESSION['user']['id'] ?? null;
         // MULTIPLE DELETE
         if (!empty($_POST['selected_recipes']) && is_array($_POST['selected_recipes'])) {
             $ids = array_map('intval', $_POST['selected_recipes']);
             $recipe->deleteMultiple($ids);
             $success = true;
             $message = count($ids) . ' recipe(s) was deleted successfully.';
+
+            // Log to user_logs
+            if ($userId) {
+                require_once 'connect.php';
+                $pdo->exec("CREATE TABLE IF NOT EXISTS user_logs (id INT AUTO_INCREMENT PRIMARY KEY, user_id INT, action VARCHAR(255), details TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
+                $logAction = 'Delete recipes';
+                $logDetails = 'Deleted recipes with IDs: ' . implode(',', $ids);
+                $logStmt = $pdo->prepare("INSERT INTO user_logs (user_id, action, details) VALUES (?, ?, ?)");
+                $logStmt->execute([$userId, $logAction, $logDetails]);
+            }
 
         // SINGLE DELETE
         } elseif (isset($_POST['id'])) {
@@ -22,6 +37,16 @@ try {
                 $recipe->deleteMultiple([$id]);
                 $success = true;
                 $message = 'Recipe "' . htmlspecialchars($recipeData['title']) . '" was deleted successfully.';
+
+                // Log to user_logs
+                if ($userId) {
+                    require_once 'connect.php';
+                    $pdo->exec("CREATE TABLE IF NOT EXISTS user_logs (id INT AUTO_INCREMENT PRIMARY KEY, user_id INT, action VARCHAR(255), details TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
+                    $logAction = 'Delete recipe';
+                    $logDetails = 'Deleted recipe "' . $recipeData['title'] . '" (ID: ' . $id . ')';
+                    $logStmt = $pdo->prepare("INSERT INTO user_logs (user_id, action, details) VALUES (?, ?, ?)");
+                    $logStmt->execute([$userId, $logAction, $logDetails]);
+                }
             } else {
                 $message = "Recipe not found or already deleted.";
             }

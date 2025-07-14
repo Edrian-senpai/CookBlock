@@ -75,7 +75,7 @@ if ($email && $token) {
             $update = $pdo->prepare("UPDATE users SET verification_token = ? WHERE id = ?");
             $update->execute([$token, $user['id']]);
 
-            $verifyLink = "http://localhost/CookBlock/verify.php?email=" . urlencode($email) . "&token=" . $token;
+            $verifyLink = "http://localhost/HCI-L_GROUP2_OE6/verify.php?email=" . urlencode($email) . "&token=" . $token;
 
             $mail = new PHPMailer(true);
             try {
@@ -130,11 +130,18 @@ if ($email && $token) {
     $alert = "<div class='alert alert-danger text-center'>Invalid request.</div>";
 }
 
+
 $userVerified = false;
 if ($email) {
     $stmt = $pdo->prepare("SELECT is_verified FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $userVerified = $stmt->fetchColumn();
+}
+
+// Hide resend button if invalid/expired link
+$showResendButton = true;
+if (strpos($alert, 'Invalid or expired verification link.') !== false) {
+    $showResendButton = false;
 }
 ?>
 
@@ -161,7 +168,8 @@ if ($email) {
 
         <?= $alert ?>
 
-        <?php if (!$success && $email && $userVerified == 0): ?>
+
+        <?php if (!$success && $email && $userVerified == 0 && $showResendButton): ?>
             <form method="post" class="mt-3" id="resendForm">
                 <input type="hidden" name="resend_email" value="<?= htmlspecialchars($email) ?>">
                 <button type="submit" class="btn btn-orange w-100" id="resendBtn" <?= !$canResend ? 'disabled' : '' ?>>
@@ -171,7 +179,7 @@ if ($email) {
             <div class="text-center text-muted mt-2" id="cooldownMsg" style="<?= $canResend ? 'display:none;' : '' ?>">
                 You can resend in <span id="cooldown"><?= $remaining ?></span> seconds.
             </div>
-            <div class="text-center text-muted mt-2" id="resendMsg" style="<?= !$canResend ? 'display:none;' : '' ?>">
+            <div class="text-center text-muted mt-2" id="resendMsg" style="display:none;">
                 Didn't receive the email? You can resend it again.
             </div>
             <div class="text-center mt-3">
@@ -235,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (resendForm && resendBtn) {
         resendForm.addEventListener('submit', function () {
             setTimeout(function() {
-                // Button text update handled by PHP/JS elsewhere
+                if (resendMsg) resendMsg.style.display = '';
             }, 100);
         });
     }

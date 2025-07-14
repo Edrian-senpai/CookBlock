@@ -1,4 +1,20 @@
 <?php
+require 'connect.php';
+// Fetch site-wide settings FIRST so variables are always defined before use
+$pdo->exec("CREATE TABLE IF NOT EXISTS site_settings (name VARCHAR(64) PRIMARY KEY, value TEXT)");
+function getSetting($name, $default = '') {
+    global $pdo;
+    $stmt = $pdo->prepare("SELECT value FROM site_settings WHERE name = ?");
+    $stmt->execute([$name]);
+    $val = $stmt->fetchColumn();
+    return $val !== false ? $val : $default;
+}
+
+$siteLogo = getSetting('logo_url', '');
+$announcement = getSetting('announcement', '');
+$maintenance = getSetting('maintenance_mode', '0');
+$contactEmail = getSetting('contact_email', '');
+
 // Include the file responsible for retrieving and preparing recipe data
 require 'fetch_view.php';
 
@@ -40,6 +56,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isAdmin) {
         if ($canDelete) {
             $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
             $stmt->execute([$userId]);
+            // Log to admin_logs
+            $pdo->exec("CREATE TABLE IF NOT EXISTS admin_logs (id INT AUTO_INCREMENT PRIMARY KEY, admin_id INT, action VARCHAR(255), details TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
+            $adminId = $user['id'] ?? 0;
+            $logAction = 'User deleted';
+            $logDetails = "Deleted user with ID {$userId}";
+            $logStmt = $pdo->prepare("INSERT INTO admin_logs (admin_id, action, details) VALUES (?, ?, ?)");
+            $logStmt->execute([$adminId, $logAction, $logDetails]);
             echo "<script>
                 document.addEventListener('DOMContentLoaded', function() {
                     showFlashMessage('User deleted successfully.');
@@ -54,6 +77,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isAdmin) {
         if ($isSuperAdmin) {
             $stmt = $pdo->prepare("UPDATE users SET role = 'admin' WHERE id = ?");
             $stmt->execute([$userId]);
+            // Log to admin_logs
+            $pdo->exec("CREATE TABLE IF NOT EXISTS admin_logs (id INT AUTO_INCREMENT PRIMARY KEY, admin_id INT, action VARCHAR(255), details TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
+            $adminId = $user['id'] ?? 0;
+            $logAction = 'User promoted to admin';
+            $logDetails = "Promoted user with ID {$userId} to admin.";
+            $logStmt = $pdo->prepare("INSERT INTO admin_logs (admin_id, action, details) VALUES (?, ?, ?)");
+            $logStmt->execute([$adminId, $logAction, $logDetails]);
             // Set a flash message (optional)
             $_SESSION['flash_message'] = 'User promoted to admin.';
             // Refresh the page to reflect changes
@@ -73,6 +103,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isAdmin) {
         if ($isSuperAdmin && $targetRole === 'admin' && $userId !== (int)$user['id']) {
             $stmt = $pdo->prepare("UPDATE users SET role = 'user' WHERE id = ?");
             $stmt->execute([$userId]);
+            // Log to admin_logs
+            $pdo->exec("CREATE TABLE IF NOT EXISTS admin_logs (id INT AUTO_INCREMENT PRIMARY KEY, admin_id INT, action VARCHAR(255), details TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
+            $adminId = $user['id'] ?? 0;
+            $logAction = 'Admin demoted to user';
+            $logDetails = "Demoted admin with ID {$userId} to user.";
+            $logStmt = $pdo->prepare("INSERT INTO admin_logs (admin_id, action, details) VALUES (?, ?, ?)");
+            $logStmt->execute([$adminId, $logAction, $logDetails]);
             echo "<script>
                 document.addEventListener('DOMContentLoaded', function() {
                     showFlashMessage('Admin demoted to user.');
@@ -177,6 +214,20 @@ $mostFavorited = $pdo->query("
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+
+    <?php if ($maintenance === '1'): ?>
+    <div class="alert alert-warning text-center mb-0" style="border-radius:0;">
+        <i class="bi bi-tools me-2"></i>
+        <strong>Maintenance Mode:</strong> The site is currently under maintenance. Some features may be unavailable.
+    </div>
+    <?php endif; ?>
+
+    <?php if ($announcement): ?>
+    <div class="alert alert-info text-center mb-0" style="border-radius:0;">
+        <i class="bi bi-megaphone me-2"></i>
+        <?= htmlspecialchars($announcement) ?>
+    </div>
+    <?php endif; ?>
 
     <!--User Top Navigation-->
 <div class="container py-5">
@@ -435,7 +486,7 @@ $avatarUrl = "https://ui-avatars.com/api/?name={$avatarName}&background=ff6f00&c
                         <a href="manage_categories.php" class="btn btn-outline-secondary btn-sm"><i class="bi bi-tags me-1"></i>Manage Categories</a>
                         <a href="site_settings.php" class="btn btn-outline-warning btn-sm"><i class="bi bi-gear me-1"></i>Site Settings</a>
                         <?php if ($isSuperAdmin): ?>
-                            <a href="admin_audit.php" class="btn btn-outline-danger btn-sm"><i class="bi bi-shield-shaded me-1"></i>Superadmin Audit</a>
+                            <a href="admin_logs.php" class="btn btn-outline-danger btn-sm"><i class="bi bi-shield-shaded me-1"></i>Admin logs</a>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -657,7 +708,7 @@ $avatarUrl = "https://ui-avatars.com/api/?name={$avatarName}&background=ff6f00&c
 
                 <form method="POST" action="export_recipe.php">
                     <button
-                        type="submit"
+                        type="button"
                         id="downloadFavoritesBtn"
                         name="print_all_favorites"
                         class="btn btn-info"
@@ -862,16 +913,20 @@ document.querySelectorAll('.delete-btn').forEach(btn => {
 });
 
 document.getElementById('printSelectedBtn').addEventListener('click', () => {
-    const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
-    if (selectedCheckboxes.length === 0) {
-        alert('Please select at least one recipe.');
+    // Maintenance mode check
+    const maintenance = '<?= $maintenance ?>';
+    if (maintenance === '1') {
+        showFlashMessage('Maintenance mode is active. Printing/exporting recipes is temporarily disabled.');
         return;
     }
-
+    const selectedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
+    if (selectedCheckboxes.length === 0) {
+        showFlashMessage('Please select at least one recipe.');
+        return;
+    }
     const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
     const form = document.getElementById('pdfForm');
     form.innerHTML = '';
-
     selectedIds.forEach(id => {
         const input = document.createElement('input');
         input.type = 'hidden';
@@ -879,7 +934,6 @@ document.getElementById('printSelectedBtn').addEventListener('click', () => {
         input.value = id;
         form.appendChild(input);
     });
-
     form.submit();
 });
 
@@ -897,9 +951,24 @@ document.addEventListener('DOMContentLoaded', function () {
     // ✅ Enable Download Favorites if data-user-favorites-count > 0
     const downloadBtn = document.getElementById('downloadFavoritesBtn');
     const hasFavorites = parseInt(downloadBtn?.getAttribute('data-favorites') || '0', 10);
-
     if (hasFavorites > 0) {
         downloadBtn.removeAttribute('disabled');
+    }
+    // Add maintenance mode check for downloadFavoritesBtn
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', function (e) {
+            const maintenance = '<?= $maintenance ?>';
+            if (maintenance === '1') {
+                showFlashMessage('Maintenance mode is active. Printing/exporting recipes is temporarily disabled.');
+                return;
+            }
+            if (hasFavorites > 0) {
+                // Submit the form programmatically
+                downloadBtn.closest('form').submit();
+            } else {
+                showFlashMessage('No favorite recipes to print.');
+            }
+        });
     }
 });
 

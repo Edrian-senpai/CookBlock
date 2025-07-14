@@ -99,6 +99,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $user) {
                 // Commit all changes to the database
                 $pdo->commit();
 
+                // Log to user_logs (after commit)
+                try {
+                    $pdo->exec("CREATE TABLE IF NOT EXISTS user_logs (id INT AUTO_INCREMENT PRIMARY KEY, user_id INT, action VARCHAR(255), details TEXT, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
+                    $logAction = 'Add recipe';
+                    $logDetails = "Added recipe '{$title}' (ID: {$recipe_id})";
+                    $logStmt = $pdo->prepare("INSERT INTO user_logs (user_id, action, details) VALUES (?, ?, ?)");
+                    $logStmt->execute([$user['id'], $logAction, $logDetails]);
+                } catch (PDOException $logEx) {
+                    // Optionally handle logging error (do not block recipe creation)
+                }
+
                 // Set success message and redirect
                 $_SESSION['flash'] = "Recipe '$title' added successfully!";
                 header("Location: view_all.php");
