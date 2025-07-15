@@ -684,11 +684,13 @@ $avatarUrl = "https://ui-avatars.com/api/?name={$avatarName}&background=ff6f00&c
 
         <?php if ($user): ?>
             <div class="d-flex flex-wrap align-items-stretch gap-2 justify-content-center">
+                <?php if ($isAdmin): ?>
                 <div>
                     <button type="submit" class="btn btn-danger h-10" id="deleteSelectedBtn" disabled onclick="return confirm('Delete selected recipe(s)?');">
                         🗑️ Delete Selected
                     </button>
                 </div>
+                <?php endif; ?>
 
                 <div>
                     <button type="button" class="btn btn-secondary h-10" id="printSelectedBtn" disabled>
@@ -1104,4 +1106,3 @@ function confirmGrantAdmin() {
 </script>
 </body>
 </html>
-
