@@ -647,15 +647,19 @@ $avatarUrl = "https://ui-avatars.com/api/?name={$avatarName}&background=ff6f00&c
                                         <?php endif; ?>
 
                                         <?php
-                                            // Check if the recipe is in the user's favorites
-                                            $favoriteStatus = false;
-                                            $stmt = $pdo->prepare("SELECT COUNT(*) FROM favorites WHERE user_id = ? AND recipe_id = ?");
-                                            $stmt->execute([$user['id'], $row['id']]);
-                                            $favoriteStatus = $stmt->fetchColumn() > 0;
-                                            ?>
-
+                                            // Show error message in Actions if user is not logged in
+                                            if (!isset($user) || !isset($user['id'])) {
+                                        ?>
+                                            <span class="fw-semibold"> Please log in to unlock full features.</span>
+                                        <?php
+                                            } else {
+                                                // Check if the recipe is in the user's favorites
+                                                $favoriteStatus = false;
+                                                $stmt = $pdo->prepare("SELECT COUNT(*) FROM favorites WHERE user_id = ? AND recipe_id = ?");
+                                                $stmt->execute([$user['id'], $row['id']]);
+                                                $favoriteStatus = $stmt->fetchColumn() > 0;
+                                        ?>
                                             <!-- Favorite Form - Updated with AJAX support -->
-                                        
                                             <input type="hidden" name="recipe_id" value="<?= $row['id'] ?>">
                                             <button type="button"
                                                     class="btn btn-sm <?= $favoriteStatus ? 'btn-warning' : 'btn-outline-warning' ?> favorite-btn text-dark"
@@ -664,6 +668,7 @@ $avatarUrl = "https://ui-avatars.com/api/?name={$avatarName}&background=ff6f00&c
                                                 <i class="bi bi-star<?= $favoriteStatus ? '-fill' : '' ?>"></i>
                                                 <span class="favorite-text"><?= $favoriteStatus ? 'Saved' : 'Save' ?></span>
                                             </button>
+                                        <?php } ?>
 
                                         
                                     </div>
@@ -701,13 +706,14 @@ $avatarUrl = "https://ui-avatars.com/api/?name={$avatarName}&background=ff6f00&c
                 <?php
                 // At the top of your file (where you have other PHP code)
                 $totalFavorites = 0;
-                if (isset($user) && isset($user['id'])) {
+                if (!empty($user) && !empty($user['id'])) {
                     $stmt = $pdo->prepare("SELECT COUNT(*) FROM favorites WHERE user_id = ?");
                     $stmt->execute([$user['id']]);
                     $totalFavorites = (int)$stmt->fetchColumn();
                 }
                 ?>
 
+                <?php if (isset($user) && isset($user['id'])): ?>
                 <form method="POST" action="export_recipe.php">
                     <button
                         type="button"
@@ -721,6 +727,12 @@ $avatarUrl = "https://ui-avatars.com/api/?name={$avatarName}&background=ff6f00&c
                         📥 Print All Favorite Recipes
                     </button>
                 </form>
+                <?php else: ?>
+                <div class="alert alert-warning w-100 text-center" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Please log in to print your favorite recipes.
+                </div>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
     </form>
