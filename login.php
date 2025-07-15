@@ -101,20 +101,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
-                <input 
-                    type="password" 
-                    class="form-control" 
-                    id="password" 
-                    name="password" 
-                    pattern="^[A-Za-z0-9@#%&!_\-\.]{8,100}$"
-                    title="Password must be 8-100 characters long. Letters, numbers, and basic symbols only. No emojis."
-                    minlength="8" 
-                    maxlength="100"
-                    required
-                >
+                <div class="input-group">
+                    <input 
+                        type="password" 
+                        class="form-control" 
+                        id="loginPassword" 
+                        name="password" 
+                        pattern="^[A-Za-z0-9@#%&!_\-\.]{8,100}$"
+                        title="Password must be 8-100 characters long. Letters, numbers, and basic symbols only. No emojis."
+                        minlength="8" 
+                        maxlength="100"
+                        required
+                    >
+                    <button class="btn btn-outline-secondary" type="button" id="toggleLoginPassword" tabindex="-1">
+                        <span id="loginPasswordIcon" class="bi bi-eye"></span>
+                    </button>
+                </div>
             </div>
 
             <button type="submit" class="btn btn-orange w-100">Login</button>
+            <div class="mb-2 text-center">
+                <a href="forgot_password.php" class="text-orange text-decoration-none fw-semibold">Forgot Password?</a>
+            </div>
                     <!-- Google Login Button -->
                     <div class="text-center mt-3">
                         <p class="mb-2">Or</p>
@@ -132,5 +140,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Show/hide password toggle for login
+        var passwordInput = document.getElementById('loginPassword');
+        var toggleBtn = document.getElementById('toggleLoginPassword');
+        var icon = document.getElementById('loginPasswordIcon');
+        if (passwordInput && toggleBtn && icon) {
+            toggleBtn.addEventListener('click', function () {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                }
+            });
+        }
+    });
+</script>
 </body>
 </html>

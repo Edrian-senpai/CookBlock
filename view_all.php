@@ -647,19 +647,15 @@ $avatarUrl = "https://ui-avatars.com/api/?name={$avatarName}&background=ff6f00&c
                                         <?php endif; ?>
 
                                         <?php
-                                            // Show error message in Actions if user is not logged in
-                                            if (!isset($user) || !isset($user['id'])) {
-                                        ?>
-                                            <span class="fw-semibold"> Please log in to unlock full features.</span>
-                                        <?php
-                                            } else {
-                                                // Check if the recipe is in the user's favorites
-                                                $favoriteStatus = false;
-                                                $stmt = $pdo->prepare("SELECT COUNT(*) FROM favorites WHERE user_id = ? AND recipe_id = ?");
-                                                $stmt->execute([$user['id'], $row['id']]);
-                                                $favoriteStatus = $stmt->fetchColumn() > 0;
-                                        ?>
+                                            // Check if the recipe is in the user's favorites
+                                            $favoriteStatus = false;
+                                            $stmt = $pdo->prepare("SELECT COUNT(*) FROM favorites WHERE user_id = ? AND recipe_id = ?");
+                                            $stmt->execute([$user['id'], $row['id']]);
+                                            $favoriteStatus = $stmt->fetchColumn() > 0;
+                                            ?>
+
                                             <!-- Favorite Form - Updated with AJAX support -->
+                                        
                                             <input type="hidden" name="recipe_id" value="<?= $row['id'] ?>">
                                             <button type="button"
                                                     class="btn btn-sm <?= $favoriteStatus ? 'btn-warning' : 'btn-outline-warning' ?> favorite-btn text-dark"
@@ -668,7 +664,6 @@ $avatarUrl = "https://ui-avatars.com/api/?name={$avatarName}&background=ff6f00&c
                                                 <i class="bi bi-star<?= $favoriteStatus ? '-fill' : '' ?>"></i>
                                                 <span class="favorite-text"><?= $favoriteStatus ? 'Saved' : 'Save' ?></span>
                                             </button>
-                                        <?php } ?>
 
                                         
                                     </div>
@@ -695,18 +690,18 @@ $avatarUrl = "https://ui-avatars.com/api/?name={$avatarName}&background=ff6f00&c
                         🗑️ Delete Selected
                     </button>
                 </div>
-                <?php endif; ?>
+                <?php endif;?>
 
                 <div>
                     <button type="button" class="btn btn-secondary h-10" id="printSelectedBtn" disabled>
                         🖨️ Print Selected
                     </button>
                 </div>
-
                 <?php
+                
                 // At the top of your file (where you have other PHP code)
                 $totalFavorites = 0;
-                if (!empty($user) && !empty($user['id'])) {
+                if (isset($user) && isset($user['id'])) {
                     $stmt = $pdo->prepare("SELECT COUNT(*) FROM favorites WHERE user_id = ?");
                     $stmt->execute([$user['id']]);
                     $totalFavorites = (int)$stmt->fetchColumn();
@@ -911,8 +906,10 @@ document.querySelectorAll('.recipe-row').forEach(row => {
         row.classList.toggle('table-primary', checkbox.checked);
 
         const anyChecked = document.querySelectorAll('.row-checkbox:checked').length > 0;
-        document.getElementById('deleteSelectedBtn').disabled = !anyChecked;
-        document.getElementById('printSelectedBtn').disabled = !anyChecked;
+        const deleteBtn = document.getElementById('deleteSelectedBtn');
+        const printBtn = document.getElementById('printSelectedBtn');
+        if (deleteBtn) deleteBtn.disabled = !anyChecked;
+        if (printBtn) printBtn.disabled = !anyChecked;
     });
 });
 
